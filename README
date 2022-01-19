@@ -1,0 +1,54 @@
+# INtcpx v0.1
+
+ INtcpx v0.1
+ The potentially nefarious TCP IPv4 connection funnel daemon from Hell
+ Copyright 2022 Ioannis Nompelis
+
+If you ever wanted to "tunnel" connections that arrive to a _given_port_
+on a _given_IP_ of a _given_interface_ of a server host in order to send them
+to a _specific_port_ of a _specific_host_ (IP) on the network, or even on a
+different network that sits behind another interface of the server host, and
+do all of this in user space, this is for you.
+
+If you also wanted to monitor those payloads that go back and forth through
+this connection, that is a built-in bonus.
+
+Here are some scenarios where this can be used:
+
+1. As an non-privilleged user you want to forward connections. (Sure, you
+can do with with SSH tunnels, but you need access to the remote host if
+you are using a "local" tunnel with the -L switch. You do not need access
+with this; you are a network spammer as far as the target host is concerned.)
+
+2. You want to take incoming connections to a random port on the host on which
+you have non-privilleged access and send them to a different port on this host.
+
+3. You sit on a host that is a "portal" (bridges two networks) and you want
+to foward connections from one network interface to another port-by-port.
+(This is like having a host with "eth0" on a public net, call it 174.x.x.x,
+and "eth1" on a private, unroutable net, call it 10.x.x.x, and taking all
+port 80 connections of an IP on eth0 and sending it to an IP in the private
+net on eth1 on which you do not have access.)
+
+4. You want to develop some socket/network software and you want to see
+what goes back and forth in a socket connection.
+
+5. You want to see how SSH works and you want to attempt to break the
+Diffie-Hellman elliptic curve (ECDH) ephemeral key exchange.
+
+6. You reall want to see how HTTP works, because the myriad of documents on
+the web are not enough. Or you want to see how HTTPS _actually_ works.
+
+7. You want to see if you got your WebSocket protocol working, because the
+myriad implementations do not fit your personality.
+
+If you modify the software, you can turn "main()" into a function that accepts
+"port" and "backlog" as agruments and spawns a thread to act as a daemon for
+each port.
+
+Be good and do not ruin people's day with this software. Read the LICENSE !!!
+
+Oh yeah, it does use POSIX threads, my favourite.
+
+IN 2022/01/19
+
