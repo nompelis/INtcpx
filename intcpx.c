@@ -80,6 +80,10 @@ int daemon_start( int *inet_socket_, struct sockaddr_in *socket_name,
       return 1;
    }
 
+   int optval=1;
+   setsockopt( inet_socket, SOL_SOCKET, SO_REUSEPORT,
+               &optval, sizeof(optval) );
+
    memset( socket_name, 0, sizeof(struct sockaddr_in) );
    socket_name->sin_family = AF_INET;
    socket_name->sin_port   = inet_port;
