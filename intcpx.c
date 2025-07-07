@@ -8,7 +8,7 @@
  ******************************************************************************/
 
 /******************************************************************************
- Copyright (c) 2022, Ioannis Nompelis
+ Copyright (c) 2022-2025, Ioannis Nompelis
  All rights reserved.
 
  Redistribution and use in source and binary forms, with or without any
@@ -54,6 +54,9 @@
 #include <dlfcn.h>
 #include <errno.h>
 #include <pthread.h>
+#ifdef _OLDER_LINUX_
+#include <fcntl.h>
+#endif
 
 
 struct inPthread_s {
@@ -80,9 +83,21 @@ int daemon_start( int *inet_socket_, struct sockaddr_in *socket_name,
       return 1;
    }
 
+#ifdef _OLDER_LINUX_
+   int flags = fcntl( inet_socket, F_GETFL, 0 );
+   if( flags == -1 ) {
+      perror("fcntl(F_GETFL)");
+      exit(1);
+   }
+   if( fcntl( inet_socket, F_SETFL, flags | O_NONBLOCK ) == -1) {
+      perror("fcntl(F_SETFL)");
+      exit(1);
+   }
+#else
    int optval=1;
    setsockopt( inet_socket, SOL_SOCKET, SO_REUSEPORT,
                &optval, sizeof(optval) );
+#endif
 
    memset( socket_name, 0, sizeof(struct sockaddr_in) );
    socket_name->sin_family = AF_INET;
@@ -272,7 +287,7 @@ int function_demo( void *arg )
 int connection_forwarder( void *arg )
 {
    char hostname[] = "nobelware.com";       // HOST TO CONNECT TO
-   int iport = 22;                          // PORT TO CONNECT TO
+   int iport = 2222;                        // PORT TO CONNECT TO
    struct inPthread_s *p = (struct inPthread_s *) arg;
    struct hostent *host;
    struct sockaddr_in addr;
@@ -295,7 +310,20 @@ int connection_forwarder( void *arg )
 #endif
    }
 
+#ifdef _OLDER_LINUX_
+   conn = socket( PF_INET, SOCK_STREAM, 0 );
+   int flags = fcntl( conn, F_GETFL, 0 );
+   if( flags == -1 ) {
+      perror("fcntl(F_GETFL)");
+      exit(1);
+   }
+   if( fcntl( conn, F_SETFL, flags | O_NONBLOCK ) == -1) {
+      perror("fcntl(F_SETFL)");
+      exit(1);
+   }
+#else
    conn = socket( PF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0 );
+#endif
    if( conn == -1 ) {
       fprintf( stdout, " [ERROR]  Could not create socket \n" );
       perror("socket creation failed");
